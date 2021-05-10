@@ -48,6 +48,9 @@ const pool = new Pool({
   ssl: sslFlag
 })
 
+console.log(pool);
+console.log(dbConfig);
+
 // Kafka Config
 // For multi-tenant kafka on heroku, we must prefix each topic
 const kafkaTopicsString=process.env.KAFKA_TOPIC;
