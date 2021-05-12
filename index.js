@@ -127,7 +127,7 @@ function saveStatsToPostgres() {
     clickValues.push([key.TxnId,key.ForiegnCurry,key.CDateTime,key.ReqType,key.RmNo]);
   });
 
-  let clickEventQuery = format('INSERT INTO transaction_request(TxnId,ForiegnCurry,CDateTime,ReqType,RmNo) VALUES %L', clickValues);
+  let clickEventQuery = format('INSERT INTO transaction_request(txn_id,foriegn_curry,c_date_time,req_type,rm_no) VALUES %L', clickValues);
   console.log(clickEventQuery);
   if (clickValues.length > 0) newClicks = true;
 
@@ -182,7 +182,7 @@ consumer
     console.log(data);
     switch (json.topic) {
     	case CLICK_KAFKA_TOPIC:
-        productClicks.push(json.properties);
+        if(json.properties.hasOwnProperty('TxnId')) productClicks.push(json.properties);
         // if (json.properties.button_id in productClicks) productClicks[json.properties.button_id]++;
         // else productClicks[json.properties.button_id] = 1;
 			  break;
