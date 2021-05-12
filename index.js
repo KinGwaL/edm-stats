@@ -105,11 +105,11 @@ consumer.connect({}, (err, data) => {
 });
 
 
-let productClicks = {}
+let productClicks = []
 let pageLoads = 0;
 
 //save clicks and page loads every 60 seconds, or every 5 seconds locally
-setInterval(saveStatsToPostgres, sslFlag ? 60000 : 5000);
+setInterval(saveStatsToPostgres, sslFlag ? 5000 : 5000);
 
 function saveStatsToPostgres() {
   let newClicks = false;
@@ -117,11 +117,17 @@ function saveStatsToPostgres() {
 
   var date = new Date();
 
-  let clickValues = Object.keys(productClicks).map(key => {
-    return [key,productClicks[key]]
+  // let clickValues = Object.keys(productClicks).map(key => {
+  //   return [key,productClicks[key]]
+  // });
+
+  let clickValues = [];
+  
+  productClicks.forEach(key => {
+    clickValues.push([key.TxnId,key.ForiegnCurry,key.CDateTime,key.ReqType,key.RmNo]);
   });
 
-  let clickEventQuery = format('INSERT INTO button_click(button_id,clicks) VALUES %L', clickValues);
+  let clickEventQuery = format('INSERT INTO transaction_request(TxnId,ForiegnCurry,CDateTime,ReqType,RmNo) VALUES %L', clickValues);
   console.log(clickEventQuery);
   if (clickValues.length > 0) newClicks = true;
 
@@ -152,7 +158,7 @@ function saveStatsToPostgres() {
         client.release()
         console.log('successfully saved data to postgres. committing new offset.')
         consumer.commit();
-        productClicks = {};
+        productClicks = [];
         pageLoads = 0;
       }
     })().catch(e => console.error(e.stack))
@@ -176,8 +182,9 @@ consumer
     console.log(data);
     switch (json.topic) {
     	case CLICK_KAFKA_TOPIC:
-        if (json.properties.button_id in productClicks) productClicks[json.properties.button_id]++;
-        else productClicks[json.properties.button_id] = 1;
+        productClicks.push(json.properties);
+        // if (json.properties.button_id in productClicks) productClicks[json.properties.button_id]++;
+        // else productClicks[json.properties.button_id] = 1;
 			  break;
 		  case PAGE_LOAD_KAFKA_TOPIC:
         pageLoads+=1;
@@ -210,7 +217,7 @@ app.use(function(req,res,next){
 // returns the number of clicks per button in the db
 //'select row_to_json(t) from ( select button_id, count(button_id) from button_click group by button_id) t'
 app.get('/api/clickCount', (req, res, next) => {
-  const clickEventSql = 'SELECT button_id, SUM(clicks) FROM button_click GROUP BY button_id';
+  const clickEventSql = 'SELECT ForiegnCurry, count(ForiegnCurry) FROM transaction_request GROUP BY ForiegnCurry';
   pool.query(clickEventSql)
       .then(pgResponse => {
       // console.log(pgResponse);
@@ -224,7 +231,7 @@ app.get('/api/clickCount', (req, res, next) => {
 })
 
 app.get('/api/clickHistory', (req, res, next) => {
-  const clickEventSql = 'SELECT date_trunc(\'day\', button_click.created_date) AS "Day" , SUM(clicks) AS "clicks" FROM button_click GROUP BY 1 ORDER BY 1';
+  const clickEventSql = 'SELECT date_trunc(\'day\', transaction_request.created_date) AS "Day" , count(ForiegnCurry) AS "transactions" FROM transaction_request GROUP BY 1 ORDER BY 1';
   pool.query(clickEventSql)
       .then(pgResponse => {
       // console.log(pgResponse);
