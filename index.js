@@ -17,7 +17,7 @@ const fetch = require("node-fetch");
 
 const { CLICK_KAFKA_TOPIC, PAGE_LOAD_KAFKA_TOPIC,GENERAL_TOPIC } = require('./kafka-topics.js')
 //const { API_ROOT } = require('./api-config');
-const API_ROOT = process.env.REACT_APP_EDM_STREAM_BACKEND_HOST;
+const API_ROOT = process.env.REACT_APP_EDM_RELAY_BACKEND_HOST;
 
 if (!process.env.KAFKA_PREFIX)          throw new Error('KAFKA_PREFIX is not set.')
 if (!process.env.KAFKA_URL)             throw new Error('KAFKA_URL is not set.')
