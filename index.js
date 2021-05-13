@@ -11,12 +11,13 @@ const PORT       = process.env.PORT || 5002;
 const nodeEnv    = process.env.NODE_ENV || 'development';
 const sslFlag = (nodeEnv == "development") ? false : true;
 
+const currentPath  = process.cwd();
+const uuid = require('uuid');
+const fetch = require("node-fetch");
+
 const { CLICK_KAFKA_TOPIC, PAGE_LOAD_KAFKA_TOPIC,GENERAL_TOPIC } = require('./kafka-topics.js')
 //const { API_ROOT } = require('./api-config');
 const API_ROOT = process.env.REACT_APP_EDM_STREAM_BACKEND_HOST;
-
-const currentPath  = process.cwd();
-var uuid = require('uuid');
 
 if (!process.env.KAFKA_PREFIX)          throw new Error('KAFKA_PREFIX is not set.')
 if (!process.env.KAFKA_URL)             throw new Error('KAFKA_URL is not set.')
