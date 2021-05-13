@@ -11,8 +11,8 @@ const PORT       = process.env.PORT || 5002;
 const nodeEnv    = process.env.NODE_ENV || 'development';
 const sslFlag = (nodeEnv == "development") ? false : true;
 
-const { CLICK_KAFKA_TOPIC, PAGE_LOAD_KAFKA_TOPIC } = require('./kafka-topics.js')
-
+const { CLICK_KAFKA_TOPIC, PAGE_LOAD_KAFKA_TOPIC,GENERAL_TOPIC } = require('./kafka-topics.js')
+const { API_ROOT } = require('./api-config');
 
 const currentPath  = process.cwd();
 
@@ -165,6 +165,58 @@ function saveStatsToPostgres() {
   }
 }
 
+function transactionResponse(json) {
+  const txnId = json.txnId;
+  if (!txnId) {
+    return;
+  }
+  const transactionSql = `SELECT * FROM transaction_request WHERE txn_id = '${txnId}'`;
+  pool.query(transactionSql)
+      .then(pgResponse => {
+       console.log(pgResponse);
+       console.log(pgResponse.rows);
+       fireGeneralTrigger(pgResponse.rows);
+
+       const isData = {
+        "Transaction_Date": "2021-05-01",
+        "Currency": "GBP",
+        "Transaction_amount_HKD": "2000",
+        "CustomerID": "1800000000000000000000000123"
+      };
+      // res.setHeader('Content-Type', 'application/json');
+      // res.send(JSON.stringify(pgResponse.rows));
+      // next();
+    })
+    .catch(error =>{
+      next(error);
+    });
+}
+
+function fireGeneralTrigger(data) {
+  const json = {
+    "topic": GENERAL_TOPIC,
+    "uuid": this.props.uuid,
+    "event_timestamp": Date.now(),
+    "properties": data
+  };
+  // send message
+  fetch(`${API_ROOT}/fireTrigger`, {
+    method: "POST",
+    body: JSON.stringify(json),
+    headers: {
+      Accept: 'application/json',
+      origin: window.location.hostname,
+      'Content-Type': 'application/json',
+    }
+  }).then(function(response) {
+    const res = response.json();
+    console.log(res);
+    //return res;
+  }, function(error) {
+    console.error(error.message);
+  });
+}
+
 consumer
   .on('ready', (id, metadata) => {
     console.log(kafkaTopics);
@@ -187,8 +239,11 @@ consumer
         // else productClicks[json.properties.button_id] = 1;
 			  break;
 		  case PAGE_LOAD_KAFKA_TOPIC:
-        pageLoads+=1;
-			  break;
+        transactionResponse(json);
+        //pageLoads+=1;
+        break;
+      case GENERAL_TOPIC:
+        break;
     }
   })
   .on('event.log', function(log) {
