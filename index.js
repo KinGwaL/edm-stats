@@ -169,7 +169,7 @@ function saveStatsToPostgres() {
 function transactionResponse(json) {
   console.log("AAAA");
   console.log(json);
-  const txnId = json.txnId;
+  const txnId = json["txn_id"];
   if (!txnId) {
     return;
   }
