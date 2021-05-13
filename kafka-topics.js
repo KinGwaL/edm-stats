@@ -7,8 +7,8 @@ if(nodeEnv == "development") {
   devClickTopicName = "edm-ui-click-local";
   devPageloadTopicName = "edm-ui-pageload-local";
 } else {
-  devClickTopicName = "edm-ui-click";
-  devPageloadTopicName = "edm-ui-pageload";
+  devClickTopicName = "citic-poc-transaction-request";
+  devPageloadTopicName = "citic-poc-transaction-response";
 }
 
 const CLICK_KAFKA_TOPIC     = process.env.CLICK_KAFKA_TOPIC || devClickTopicName;
