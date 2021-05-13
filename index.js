@@ -16,6 +16,7 @@ const { CLICK_KAFKA_TOPIC, PAGE_LOAD_KAFKA_TOPIC,GENERAL_TOPIC } = require('./ka
 const API_ROOT = process.env.REACT_APP_EDM_STREAM_BACKEND_HOST;
 
 const currentPath  = process.cwd();
+var uuid = require('uuid');
 
 if (!process.env.KAFKA_PREFIX)          throw new Error('KAFKA_PREFIX is not set.')
 if (!process.env.KAFKA_URL)             throw new Error('KAFKA_URL is not set.')
@@ -182,7 +183,6 @@ function transactionResponse(json) {
        }
        
        const rowData = pgResponse.rows[0];
-       console.log(rowData);
        const isData = {
         "Transaction_Date": rowData["c_date_time"],
         "Currency": rowData["foriegn_curry"],
@@ -190,13 +190,7 @@ function transactionResponse(json) {
         "CustomerID": rowData["rm_no"]
       };
 
-      console.log("CCC");
-      console.log(isData);
       fireGeneralTrigger(isData);
-
-      // res.setHeader('Content-Type', 'application/json');
-      // res.send(JSON.stringify(pgResponse.rows));
-     // next(isData);
     })
     .catch(error =>{
       console.log("transactionResponse-error");
@@ -208,7 +202,7 @@ function fireGeneralTrigger(data) {
   console.log(data);
   const json = {
     "topic": GENERAL_TOPIC,
-    "uuid": this.props.uuid,
+    "uuid": uuid.v1(),
     "event_timestamp": Date.now(),
     "properties": data
   };
@@ -218,7 +212,7 @@ function fireGeneralTrigger(data) {
     body: JSON.stringify(json),
     headers: {
       Accept: 'application/json',
-      origin: window.location.hostname,
+      // origin: window.location.hostname,
       'Content-Type': 'application/json',
     }
   }).then(function(response) {
