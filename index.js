@@ -124,7 +124,7 @@ function saveStatsToPostgres() {
   let clickValues = [];
   
   productClicks.forEach(key => {
-    clickValues.push([key.TxnId,key.ForiegnCurry,key.CDateTime,key.ReqType,key.RmNo]);
+    clickValues.push([key["txn_id"],key["foriegn_curry"],key["c_date_time"],key["req_type"],key["rm_no"]]);
   });
 
   let clickEventQuery = format('INSERT INTO transaction_request(txn_id,foriegn_curry,c_date_time,req_type,rm_no) VALUES %L', clickValues);
