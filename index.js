@@ -176,12 +176,13 @@ function transactionResponse(json) {
   const transactionSql = `SELECT * FROM transaction_request WHERE txn_id = '${txnId}'`;
   pool.query(transactionSql)
       .then(pgResponse => {
-       const rowData = pgResponse.rows[0];
-
+       console.log("BBB");
        if(pgResponse.rows.length <= 0) {
          return;
        }
        
+       const rowData = pgResponse.rows[0];
+       console.log(rowData);
        const isData = {
         "Transaction_Date": rowData["c_date_time"],
         "Currency": rowData["foriegn_curry"],
@@ -194,13 +195,14 @@ function transactionResponse(json) {
       next(isData);
     })
     .then(data => {
+      console.log("CCC");
       console.log(data);
       fireGeneralTrigger(data);
       next();
     })
     .catch(error =>{
       console.log("transactionResponse-error");
-      next(error);
+      console.log(error);
     });
 }
 
