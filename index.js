@@ -168,28 +168,34 @@ function saveStatsToPostgres() {
 
 function transactionResponse(json) {
   console.log(json);
-  const txnId = json["properties"]["txn_id"];
+  const responseData = json["properties"];
+  const txnId = responseData["txn_id"];
   if (!txnId) {
     return;
   }
   const transactionSql = `SELECT * FROM transaction_request WHERE txn_id = '${txnId}'`;
   pool.query(transactionSql)
       .then(pgResponse => {
-       console.log(pgResponse);
-       console.log(pgResponse.rows);
-       fireGeneralTrigger(pgResponse.rows);
+       const rowData = pgResponse.rows[0];
 
+       if(pgResponse.rows.length <= 0) {
+         return;
+       }
+       
        const isData = {
-        "Transaction_Date": "2021-05-01",
-        "Currency": "GBP",
-        "Transaction_amount_HKD": "2000",
-        "CustomerID": "1800000000000000000000000123"
+        "Transaction_Date": rowData["c_date_time"],
+        "Currency": rowData["foriegn_curry"],
+        "Transaction_amount_HKD": responseData["calculated_hkd_amount"],
+        "CustomerID": rowData["rm_no"]
       };
+
+      fireGeneralTrigger(isData);
       // res.setHeader('Content-Type', 'application/json');
       // res.send(JSON.stringify(pgResponse.rows));
-      // next();
+      next();
     })
     .catch(error =>{
+      console.log("transactionResponse-error");
       next(error);
     });
 }
@@ -213,8 +219,10 @@ function fireGeneralTrigger(data) {
   }).then(function(response) {
     const res = response.json();
     console.log(res);
+    next();
     //return res;
   }, function(error) {
+    console.log("fireGeneralTrigger-error");
     console.error(error.message);
   });
 }
