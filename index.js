@@ -186,8 +186,8 @@ function transactionResponse(json) {
        const rowData = pgResponse.rows[0];
        const fullDateString = rowData["c_date_time"];
        const yearString = fullDateString.substring(0, 4);
-       const monthString = fullDateString.substring(5, 7);
-       const dateString = fullDateString.substring(8, 10);
+       const monthString = fullDateString.substring(4, 6);
+       const dateString = fullDateString.substring(7, 9);
 
        const isData = {
         "Transaction_Date": `${yearString}-${monthString}-${dateString}`,
