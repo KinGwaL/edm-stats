@@ -182,7 +182,7 @@ consumer
     console.log(data);
     switch (json.topic) {
     	case CLICK_KAFKA_TOPIC:
-        if(json.properties.hasOwnProperty('TxnId')) productClicks.push(json.properties);
+        if(json.properties.hasOwnProperty('txn_id')) productClicks.push(json.properties);
         // if (json.properties.button_id in productClicks) productClicks[json.properties.button_id]++;
         // else productClicks[json.properties.button_id] = 1;
 			  break;
