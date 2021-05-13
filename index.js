@@ -217,7 +217,7 @@ app.use(function(req,res,next){
 // returns the number of clicks per button in the db
 //'select row_to_json(t) from ( select button_id, count(button_id) from button_click group by button_id) t'
 app.get('/api/clickCount', (req, res, next) => {
-  const clickEventSql = 'SELECT ForiegnCurry, count(ForiegnCurry) FROM transaction_request GROUP BY ForiegnCurry';
+  const clickEventSql = 'SELECT foriegn_curry, count(foriegn_curry) FROM transaction_request GROUP BY foriegn_curry';
   pool.query(clickEventSql)
       .then(pgResponse => {
       // console.log(pgResponse);
@@ -231,7 +231,7 @@ app.get('/api/clickCount', (req, res, next) => {
 })
 
 app.get('/api/clickHistory', (req, res, next) => {
-  const clickEventSql = 'SELECT date_trunc(\'day\', transaction_request.created_date) AS "Day" , count(ForiegnCurry) AS "transactions" FROM transaction_request GROUP BY 1 ORDER BY 1';
+  const clickEventSql = 'SELECT date_trunc(\'day\', transaction_request.created_date) AS "Day" , count(foriegn_curry) AS "transactions" FROM transaction_request GROUP BY 1 ORDER BY 1';
   pool.query(clickEventSql)
       .then(pgResponse => {
       // console.log(pgResponse);
