@@ -12,7 +12,8 @@ const nodeEnv    = process.env.NODE_ENV || 'development';
 const sslFlag = (nodeEnv == "development") ? false : true;
 
 const { CLICK_KAFKA_TOPIC, PAGE_LOAD_KAFKA_TOPIC,GENERAL_TOPIC } = require('./kafka-topics.js')
-const { API_ROOT } = require('./api-config');
+//const { API_ROOT } = require('./api-config');
+const API_ROOT = process.env.REACT_APP_EDM_STREAM_BACKEND_HOST;
 
 const currentPath  = process.cwd();
 
