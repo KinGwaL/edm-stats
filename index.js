@@ -184,8 +184,13 @@ function transactionResponse(json) {
        }
        
        const rowData = pgResponse.rows[0];
+       const fullDateString = rowData["c_date_time"];
+       const yearString = fullDateString.substring(0, 4);
+       const monthString = fullDateString.substring(5, 7);
+       const dateString = fullDateString.substring(8, 10);
+
        const isData = {
-        "Transaction_Date": rowData["c_date_time"],
+        "Transaction_Date": `${yearString}-${monthString}-${dateString}`,
         "Currency": rowData["foriegn_curry"],
         "Transaction_amount_HKD": responseData["calculated_hkd_amount"],
         "CustomerID": rowData["rm_no"]
