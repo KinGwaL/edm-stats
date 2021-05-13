@@ -167,9 +167,8 @@ function saveStatsToPostgres() {
 }
 
 function transactionResponse(json) {
-  console.log("AAAA");
   console.log(json);
-  const txnId = json["txn_id"];
+  const txnId = json["properties"]["txn_id"];
   if (!txnId) {
     return;
   }
@@ -235,9 +234,7 @@ consumer
     const message = data.value.toString()
     const json = JSON.parse(message);
     console.log(data);
-    console.log(json);
-    console.log(data.value);
-    
+
     switch (json.topic) {
     	case CLICK_KAFKA_TOPIC:
         if(json.properties.hasOwnProperty('txn_id')) productClicks.push(json.properties);
