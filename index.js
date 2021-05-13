@@ -189,10 +189,13 @@ function transactionResponse(json) {
         "CustomerID": rowData["rm_no"]
       };
 
-      fireGeneralTrigger(isData);
       // res.setHeader('Content-Type', 'application/json');
       // res.send(JSON.stringify(pgResponse.rows));
       next();
+
+      console.log(isData);
+      fireGeneralTrigger(isData);
+
     })
     .catch(error =>{
       console.log("transactionResponse-error");
