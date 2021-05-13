@@ -204,6 +204,7 @@ function transactionResponse(json) {
 }
 
 function fireGeneralTrigger(data) {
+  console.log(data);
   const json = {
     "topic": GENERAL_TOPIC,
     "uuid": this.props.uuid,
