@@ -190,15 +190,13 @@ function transactionResponse(json) {
         "CustomerID": rowData["rm_no"]
       };
 
+      console.log("CCC");
+      console.log(isData);
+      fireGeneralTrigger(isData);
+
       // res.setHeader('Content-Type', 'application/json');
       // res.send(JSON.stringify(pgResponse.rows));
-      next(isData);
-    })
-    .then(data => {
-      console.log("CCC");
-      console.log(data);
-      fireGeneralTrigger(data);
-      next();
+     // next(isData);
     })
     .catch(error =>{
       console.log("transactionResponse-error");
@@ -226,7 +224,7 @@ function fireGeneralTrigger(data) {
   }).then(function(response) {
     const res = response.json();
     console.log(res);
-    next();
+  //  next();
     //return res;
   }, function(error) {
     console.log("fireGeneralTrigger-error");
