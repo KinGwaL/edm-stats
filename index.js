@@ -191,11 +191,12 @@ function transactionResponse(json) {
 
       // res.setHeader('Content-Type', 'application/json');
       // res.send(JSON.stringify(pgResponse.rows));
+      next(isData);
+    })
+    .then(data => {
+      console.log(data);
+      fireGeneralTrigger(data);
       next();
-
-      console.log(isData);
-      fireGeneralTrigger(isData);
-
     })
     .catch(error =>{
       console.log("transactionResponse-error");
