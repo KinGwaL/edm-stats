@@ -253,6 +253,7 @@ function interactiveStudioTrigger(data) {
     }
   }).then(function(response) {
     const res = response.json();
+    fireGeneralTrigger(json);
     console.log(res);
   //  next();
     //return res;
