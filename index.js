@@ -204,7 +204,7 @@ function transactionResponse(json) {
   //   });
 
 
-  fireGeneralTrigger(responseData);
+  //fireGeneralTrigger(responseData);
   interactiveStudioTrigger(responseData);
 }
 
