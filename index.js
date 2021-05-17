@@ -175,34 +175,93 @@ function transactionResponse(json) {
   if (!txnId) {
     return;
   }
-  const transactionSql = `SELECT * FROM transaction_request WHERE txn_id = '${txnId}'`;
-  pool.query(transactionSql)
-      .then(pgResponse => {
-       console.log("BBB");
-       if(pgResponse.rows.length <= 0) {
-         return;
-       }
+  // const transactionSql = `SELECT * FROM transaction_request WHERE txn_id = '${txnId}'`;
+  // pool.query(transactionSql)
+  //     .then(pgResponse => {
+  //      console.log("BBB");
+  //      if(pgResponse.rows.length <= 0) {
+  //        return;
+  //      }
        
-       const rowData = pgResponse.rows[0];
-       const fullDateString = rowData["c_date_time"];
-       const yearString = fullDateString.substring(0, 4);
-       const monthString = fullDateString.substring(4, 6);
-       const dateString = fullDateString.substring(7, 9);
+  //      const rowData = pgResponse.rows[0];
+  //      const fullDateString = rowData["c_date_time"];
+  //      const yearString = fullDateString.substring(0, 4);
+  //      const monthString = fullDateString.substring(4, 6);
+  //      const dateString = fullDateString.substring(7, 9);
 
-       const isData = {
-        "Transaction_Date": `${yearString}-${monthString}-${dateString}`,
-        "Currency": rowData["foriegn_curry"],
-        "Transaction_amount_HKD": responseData["calculated_hkd_amount"],
-        "CustomerID": rowData["rm_no"]
-      };
+  //      const isData = {
+  //       "Transaction_Date": `${yearString}-${monthString}-${dateString}`,
+  //       "Currency": rowData["foriegn_curry"],
+  //       "Transaction_amount_HKD": responseData["calculated_hkd_amount"],
+  //       "CustomerID": rowData["rm_no"]
+  //     };
 
-      fireGeneralTrigger(isData);
-    })
-    .catch(error =>{
-      console.log("transactionResponse-error");
-      console.log(error);
-    });
+  //     fireGeneralTrigger(isData);
+  //   })
+  //   .catch(error =>{
+  //     console.log("transactionResponse-error");
+  //     console.log(error);
+  //   });
+
+
+  fireGeneralTrigger(responseData);
+  interactiveStudioTrigger(responseData);
 }
+
+
+function interactiveStudioTrigger(data) {
+  console.log(data);
+  const currencyData = data["Request"]["ForeignCurry"];
+  const priceData = data["Response"]["CalculatedHKDAmount"];
+  const userId = data["Request"]["RmNo"];
+  const fullDateString = data["Request"]["CDateTime"];
+  const yearString = fullDateString.substring(0, 4);
+  const monthString = fullDateString.substring(4, 6);
+  const dateString = fullDateString.substring(7, 9);
+
+  const json = {
+    "action": "CITIC - Transaction Data To IS",
+    "user": {
+      "id": userId,
+      "attributes": {
+        "customerid": userId,
+        "transactionDataFields":`IS___${currencyData}___${priceData}___${yearString}-${monthString}-${dateString}____citic@tokenization.com`,
+        "transactionFlags": true
+      }
+    },
+    "itemAction": "Purchase",
+    "order": {
+      "Product": {
+        "orderId": uuid.v1(),
+        "currency": currencyData,
+        "lineItems":[{
+          "_id":currencyData,
+          "price": priceData,
+          "quantity": 1
+        }]
+      }
+    }
+  };
+  // send message
+  fetch("https://partnerdeloittechina.australia-3.evergage.com/api2/event/CITIC", {
+    method: "POST",
+    body: JSON.stringify(json),
+    headers: {
+      Accept: 'application/json',
+      // origin: window.location.hostname,
+      'Content-Type': 'application/json',
+    }
+  }).then(function(response) {
+    const res = response.json();
+    console.log(res);
+  //  next();
+    //return res;
+  }, function(error) {
+    console.log("fireGeneralTrigger-error");
+    console.error(error.message);
+  });
+}
+
 
 function fireGeneralTrigger(data) {
   console.log(data);
