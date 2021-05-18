@@ -210,7 +210,7 @@ function transactionResponse(json) {
 
 
 function interactiveStudioTrigger(data) {
-  console.log(data);
+  //console.log(data);
   const currencyData = data["Request"]["ForeignCurry"];
   const priceData = data["Response"]["CalculatedHKDAmount"];
   const userId = data["Request"]["RmNo"];
@@ -252,9 +252,11 @@ function interactiveStudioTrigger(data) {
       'Content-Type': 'application/json',
     }
   }).then(function(response) {
-    const res = response.json();
-    fireGeneralTrigger(json);
-    console.log(res);
+    console.log(response);
+    console.log(json);
+    //const res = response.json();
+    //fireGeneralTrigger(json);
+    
   //  next();
     //return res;
   }, function(error) {
