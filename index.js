@@ -257,7 +257,7 @@ function interactiveStudioTrigger(data) {
     console.log(response);
     //console.log(json);
     //const res = response.json();
-    //fireGeneralTrigger(json);
+    fireGeneralTrigger(json);
     
   //  next();
     //return res;
