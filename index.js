@@ -243,7 +243,6 @@ function interactiveStudioTrigger(data) {
     }
   };
 
-  console.log("AAA");
   console.log(json);
   // send message
   fetch("https://partnerdeloittechina.australia-3.evergage.com/api2/event/macstudy", {
@@ -255,7 +254,6 @@ function interactiveStudioTrigger(data) {
       'Content-Type': 'application/json',
     }
   }).then(function(response) {
-    console.log("BBB");
     console.log(response);
     //console.log(json);
     //const res = response.json();
@@ -265,7 +263,6 @@ function interactiveStudioTrigger(data) {
     //return res;
   }, function(error) {
     console.log("fireGeneralTrigger-error");
-    console.log("CCC");
     console.error(error.message);
   });
 }
