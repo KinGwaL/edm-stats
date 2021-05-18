@@ -243,7 +243,7 @@ function interactiveStudioTrigger(data) {
     }
   };
   // send message
-  fetch("https://partnerdeloittechina.australia-3.evergage.com/api2/event/CITIC", {
+  fetch("https://partnerdeloittechina.australia-3.evergage.com/api2/event/macstudy", {
     method: "POST",
     body: JSON.stringify(json),
     headers: {
