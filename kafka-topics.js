@@ -9,6 +9,7 @@ if(nodeEnv == "development") {
   devClickTopicName = "edm-ui-click-local";
   devPageloadTopicName = "edm-ui-pageload-local";
   generalTopicName = "citic-poc-general-response";
+  directTopicName = "citic-poc-mobile-action";
 } else {
   devClickTopicName = "citic-poc-transaction-request";
   devPageloadTopicName = "citic-poc-transaction-response";
