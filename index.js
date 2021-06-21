@@ -114,15 +114,16 @@ consumer.connect({}, (err, data) => {
 
 
 function interactiveStudioDirectTrigger(data) {
+  const responseData = data["properties"];
   fetch(INTERACTION_STUDIO_ROOT, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(responseData),
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     }
   }).then(function(response) {
-    fireGeneralTrigger(data);
+    fireGeneralTrigger(responseData);
   }, function(error) {
     console.error(error.message);
   });
