@@ -122,9 +122,8 @@ function interactiveStudioDirectTrigger(data) {
       'Content-Type': 'application/json',
     }
   }).then(function(response) {
-    fireGeneralTrigger(json);
+    fireGeneralTrigger(data);
   }, function(error) {
-    console.log("fireGeneralTrigger-error");
     console.error(error.message);
   });
 }
@@ -143,10 +142,10 @@ function interactiveStudioTrigger(data) {
     return;
   }
 
-  const currencyData = data["Request"]["ForeignCurry"];
-  const priceData = data["Response"]["CalculatedHKDAmount"];
-  const userId = data["Request"]["RmNo"];
-  const fullDateString = data["Request"]["CDateTime"];
+  const currencyData = responseData["Request"]["ForeignCurry"];
+  const priceData = responseData["Response"]["CalculatedHKDAmount"];
+  const userId = responseData["Request"]["RmNo"];
+  const fullDateString = responseData["Request"]["CDateTime"];
   const yearString = fullDateString.substring(0, 4);
   const monthString = fullDateString.substring(4, 6);
   const dateString = fullDateString.substring(7, 9);
