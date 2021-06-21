@@ -116,7 +116,7 @@ consumer.connect({}, (err, data) => {
 function interactiveStudioDirectTrigger(data) {
   fetch(INTERACTION_STUDIO_ROOT, {
     method: "POST",
-    body: JSON.stringify(json),
+    body: JSON.stringify(data),
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ function interactiveStudioDirectTrigger(data) {
 
 
 function interactiveStudioTrigger(data) {
-  const responseData = json["properties"];
+  const responseData = data["properties"];
   const txnId = responseData["TxnId"];
   if (!txnId) {
     return;
