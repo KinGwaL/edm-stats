@@ -6,16 +6,14 @@ const fs         = require('fs');
 const { Pool, Client } = require('pg');
 const format = require('pg-format');
 const parseDbUrl       = require('parse-database-url');
-
 const PORT       = process.env.PORT || 5002;
 const nodeEnv    = process.env.NODE_ENV || 'development';
 const sslFlag = (nodeEnv == "development") ? false : true;
-
 const currentPath  = process.cwd();
 const uuid = require('uuid');
 const fetch = require("node-fetch");
 
-const { CLICK_KAFKA_TOPIC, PAGE_LOAD_KAFKA_TOPIC,GENERAL_TOPIC } = require('./kafka-topics.js')
+const { CLICK_KAFKA_TOPIC, TRANSACTION_TOPIC,GENERAL_TOPIC,DIRECT_ACTION_TOPIC } = require('./kafka-topics.js')
 //const { API_ROOT } = require('./api-config');
 const API_ROOT = process.env.REACT_APP_EDM_RELAY_BACKEND_HOST;
 const INTERACTION_STUDIO_ROOT = process.env.REACT_APP_INTERACTION_STUDIO_HOST;
@@ -109,109 +107,42 @@ consumer.connect({}, (err, data) => {
 });
 
 
-let productClicks = []
-let pageLoads = 0;
 
-//save clicks and page loads every 60 seconds, or every 5 seconds locally
-setInterval(saveStatsToPostgres, sslFlag ? 5000 : 5000);
 
-function saveStatsToPostgres() {
-  let newClicks = false;
-  let newLoads = false;
 
-  var date = new Date();
 
-  // let clickValues = Object.keys(productClicks).map(key => {
-  //   return [key,productClicks[key]]
-  // });
 
-  let clickValues = [];
-  
-  productClicks.forEach(key => {
-    clickValues.push([key["txn_id"],key["foriegn_curry"],key["c_date_time"],key["req_type"],key["rm_no"]]);
+
+function interactiveStudioDirectTrigger(data) {
+  fetch(INTERACTION_STUDIO_ROOT, {
+    method: "POST",
+    body: JSON.stringify(json),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    }
+  }).then(function(response) {
+    fireGeneralTrigger(json);
+  }, function(error) {
+    console.log("fireGeneralTrigger-error");
+    console.error(error.message);
   });
-
-  let clickEventQuery = format('INSERT INTO transaction_request(txn_id,foriegn_curry,c_date_time,req_type,rm_no) VALUES %L', clickValues);
-  console.log(clickEventQuery);
-  if (clickValues.length > 0) newClicks = true;
-
-  const pageLoadValues = [pageLoads, date.getTime()];
-  let loadEventQuery = 'INSERT INTO page_load(loads,created_date) VALUES($1, to_timestamp($2 / 1000.0))';
-  if (pageLoads > 0) newLoads = true;
-  
-  if (!newClicks && !newLoads) {
-    console.log('no new events to record!')
-  } else {
-    (async () => {
-      const client = await pool.connect()
-      try {
-        await client.query('BEGIN')
-        let rows;
-        let rows2;
-        if (newClicks){
-          rows = await client.query(clickEventQuery)
-        } 
-        if (newLoads) {
-          rows2 = await client.query(loadEventQuery, pageLoadValues)
-        } 
-        await client.query('COMMIT')
-      } catch (e) {
-        await client.query('ROLLBACK')
-        throw e
-      } finally {
-        client.release()
-        console.log('successfully saved data to postgres. committing new offset.')
-        consumer.commit();
-        productClicks = [];
-        pageLoads = 0;
-      }
-    })().catch(e => console.error(e.stack))
-  }
 }
 
-function transactionResponse(json) {
-  console.log(json);
+
+
+
+
+
+
+
+function interactiveStudioTrigger(data) {
   const responseData = json["properties"];
   const txnId = responseData["TxnId"];
   if (!txnId) {
     return;
   }
-  // const transactionSql = `SELECT * FROM transaction_request WHERE txn_id = '${txnId}'`;
-  // pool.query(transactionSql)
-  //     .then(pgResponse => {
-  //      console.log("BBB");
-  //      if(pgResponse.rows.length <= 0) {
-  //        return;
-  //      }
-       
-  //      const rowData = pgResponse.rows[0];
-  //      const fullDateString = rowData["c_date_time"];
-  //      const yearString = fullDateString.substring(0, 4);
-  //      const monthString = fullDateString.substring(4, 6);
-  //      const dateString = fullDateString.substring(7, 9);
 
-  //      const isData = {
-  //       "Transaction_Date": `${yearString}-${monthString}-${dateString}`,
-  //       "Currency": rowData["foriegn_curry"],
-  //       "Transaction_amount_HKD": responseData["calculated_hkd_amount"],
-  //       "CustomerID": rowData["rm_no"]
-  //     };
-
-  //     fireGeneralTrigger(isData);
-  //   })
-  //   .catch(error =>{
-  //     console.log("transactionResponse-error");
-  //     console.log(error);
-  //   });
-
-
-  //fireGeneralTrigger(responseData);
-  interactiveStudioTrigger(responseData);
-}
-
-
-function interactiveStudioTrigger(data) {
-  //console.log(data);
   const currencyData = data["Request"]["ForeignCurry"];
   const priceData = data["Response"]["CalculatedHKDAmount"];
   const userId = data["Request"]["RmNo"];
@@ -221,7 +152,7 @@ function interactiveStudioTrigger(data) {
   const dateString = fullDateString.substring(7, 9);
 
   const json = {
-    "action": "CITIC - Transaction Data To IS",
+    "action": `CNCBI - FX Transaction - ${currencyData}`,
     "user": {
       "id": userId,
       "attributes": {
@@ -244,29 +175,26 @@ function interactiveStudioTrigger(data) {
     }
   };
 
-  console.log(json);
-  // send message
   fetch(INTERACTION_STUDIO_ROOT, {
     method: "POST",
     body: JSON.stringify(json),
     headers: {
       Accept: 'application/json',
-      // origin: window.location.hostname,
       'Content-Type': 'application/json',
     }
   }).then(function(response) {
-    console.log(response);
-    //console.log(json);
-    //const res = response.json();
     fireGeneralTrigger(json);
-    
-  //  next();
-    //return res;
   }, function(error) {
     console.log("fireGeneralTrigger-error");
     console.error(error.message);
   });
 }
+
+
+
+
+
+
 
 
 function fireGeneralTrigger(data) {
@@ -297,6 +225,14 @@ function fireGeneralTrigger(data) {
   });
 }
 
+
+
+
+
+
+
+
+
 consumer
   .on('ready', (id, metadata) => {
     console.log(kafkaTopics);
@@ -314,14 +250,11 @@ consumer
     console.log(data);
 
     switch (json.topic) {
-    	case CLICK_KAFKA_TOPIC:
-        if(json.properties.hasOwnProperty('txn_id')) productClicks.push(json.properties);
-        // if (json.properties.button_id in productClicks) productClicks[json.properties.button_id]++;
-        // else productClicks[json.properties.button_id] = 1;
-			  break;
-		  case PAGE_LOAD_KAFKA_TOPIC:
-        transactionResponse(json);
-        //pageLoads+=1;
+		  case TRANSACTION_TOPIC:
+        interactiveStudioTrigger(json);
+        break;
+      case DIRECT_ACTION_TOPIC:
+        interactiveStudioDirectTrigger(json);
         break;
       case GENERAL_TOPIC:
         break;
@@ -334,6 +267,13 @@ consumer
     console.error('Error from consumer');
     console.error(err);
   });
+
+
+
+
+
+
+
 
 
 //
